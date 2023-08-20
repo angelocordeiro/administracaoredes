@@ -1,0 +1,13 @@
+ifconfig eth0 192.168.10.1/24
+ifconfig eth1 50.0.0.1/30
+
+route add default gw 50.0.0.2
+
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -A INPUT -p tcp --dport 22 -s 192.168.10.0/24 -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -s 192.168.10.0/24 -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 4/minute --limit-burst 1 -j ACCEPT
+iptables -A FORWARD -p tcp -s 192.168.10.0/24 --dport 80 -j ACCEPT
+iptables -A FORWARD -p tcp -s 192.168.10.0/24 --dport 443 -j ACCEPT
+iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
